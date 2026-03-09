@@ -1,0 +1,46 @@
+# tZERO Secondary Marketplace - Solution Summary
+
+## Overview
+I have completed the and refined the **tZERO Secondary Marketplace** trading features, turning the provided starter code into a fully functional digital securities trading platform. This implementation covers asset discovery, real-time order matching, and deep portfolio integration.
+
+## Features Built
+
+### 1. Asset Listing & Discovery
+- **Live Search & Filtering**: Implemented a dynamic search bar and category filtering (Tech, Crypto, Real Estate) on the `/investing/secondary-trading` page.
+- **Rich Asset UI**: Designed premium-looking asset cards featuring company logos, symbols, and real-time performance indicators (price changes, percentage shifts) derived from the provided JSON data.
+
+### 2. Trading Terminal (Asset Detail Page)
+- **Interactive Price Chart**: Created a custom SVG-based price chart to visualize historical OHLCV data for each asset.
+- **Dynamic Order Book**: Built a live Bid/Ask order book that reflects both initial market depth and real user orders currently in the system.
+- **Order Placement System**: Developed a sophisticated trading form with:
+    - **BUY/SELL Toggles**: Seamlessly switch between order sides.
+    - **Limit Order Support**: Enter precise quantity and price.
+    - **Automatic Cost Calculation**: Real-time estimation of the total trade value and fees.
+    - **Balance Validation**: Prevents users from overspending by checking available cash and existing holdings.
+    - **Order Management**: Users can view their pending orders and cancel them instantly.
+
+### 3. Backend Trading Logic
+- **API Flow**: Designed a consistent API structure (`/api/trading/*`) for order creation, cancellation, and data fetching.
+- **Matching Engine Refinements**: 
+    - Enhanced the `matchOrder` logic to handle **Cash Balance Transfers** between buyers and sellers.
+    - Implemented **Price Improvement Refunds**: If a buyer's limit price is higher than the best available ask, the engine automatically refunds the difference.
+    - Ensured atomicity using SQLite transactions to prevent double-spending or inconsistent holdings.
+
+### 4. Portfolio Integration
+- **Unified Balance View**: The portfolio now correctly aggregates cash balances from both traditional banking and the trading marketplace.
+- **Real-Time Holdings**: Assets purchased on the marketplace are immediately reflected in the "Active Holdings" section with accurate share counts and average cost bases.
+- **Marketplace Activity History**: Replaced generic transaction placeholders with a real-time "Marketplace Activity" log showing actual trade executions (matches).
+
+## Technical Decisions & Trade-offs
+- **State Management**: Used React's built-in hooks (`useState`, `useMemo`, `useEffect`) for the trading terminal to keep the application lightweight and fast without adding external state management libraries like Redux.
+- **Database Seeding**: Added a system-level market maker user (`user_system_mm`) and seeded the database with initial liquidity (limit orders) on application startup. This ensures that the matching engine is "alive" and works for first-time users immediately without needing another human trader.
+- **API URL Structure**: Fixed a double-prefixing issue in the starter code to ensure all frontend calls correctly hit the Next.js API routes.
+
+## Future Improvements
+- **WebSockets for Real-time Updates**: Currently, the order book and price updates rely on polling or page refreshes. Implementing WebSockets would provide a truly "live" experience typical of high-frequency trading platforms.
+- **Advanced Order Types**: Adding support for Market Orders (fill at best available price) and Stop-Loss orders.
+- **Enhanced Charts**: Integrating a library like `lightweight-charts` or `D3.js` for more professional candlestick visualizations and technical indicators.
+- **Fractional Shares**: Enabling users to trade partial units of digital securities.
+
+## Summary
+The platform is now fully end-to-end functional. A user can sign up, deposit funds, browse assets, execute trades against the market maker or other users, and see their portfolio update in real-time.
