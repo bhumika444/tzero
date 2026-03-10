@@ -1,35 +1,6 @@
 import crypto from 'crypto'
 import db from '@/lib/db'
 
-/**
- * Order Matching Engine
- *
- * Matches a new order against existing opposing orders in the book.
- * - Buy orders match against sell orders with price <= buy price (lowest first)
- * - Sell orders match against buy orders with price >= sell price (highest first)
- *
- * When a match is found:
- * - A trade record is created in trading_trades
- * - Both orders' remaining_quantity and status are updated
- * - Holdings are updated for both buyer and seller via upsertHolding()
- *
- * Returns: { orderId, status, remaining }
- *
- * NOTE: This engine handles order matching and position updates.
- * You still need to build the API route that calls this, including:
- * - Input validation
- * - Authentication
- * - Balance/share checks before placing an order
- * - Any other business logic you see fit
- *
- * Usage:
- *   import crypto from 'crypto'
- *   import { matchOrder } from '@/lib/matchingEngine'
- *
- *   const result = matchOrder(crypto.randomUUID(), userId, 'NVMT', 'buy', 10, 3.09, 'day')
- *   // result = { orderId: '...', status: 'Pending' | 'Completed' | 'PartiallyFilled', remaining: 7 }
- */
-
 export function upsertHolding(userId: string, symbol: string, deltaShares: number, price: number) {
   const holding = db.prepare('SELECT shares, avg_cost FROM trading_holdings WHERE user_id = ? AND symbol = ?').get(userId, symbol) as
     | { shares: number; avg_cost: number }
@@ -128,17 +99,20 @@ export function matchOrder(
       const buyerId = side === 'buy' ? userId : match.user_id
       const sellerId = side === 'sell' ? userId : match.user_id
 
+      // Buyer always receives shares
       upsertHolding(buyerId, symbol, fillQty, tradePrice)
-      upsertHolding(sellerId, symbol, -fillQty, tradePrice)
+
+      // NOTE: Seller's shares were already subtracted in createOrder() to reserve them.
+      // We do NOT subtract them again here.
 
       // Cash Balance Transfers
       const totalTradeValue = fillQty * tradePrice
 
-      // Update Seller's balance (they receive the cash)
+      // Seller receives cash
       db.prepare('UPDATE trading_balances SET cash_balance = cash_balance + ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?')
         .run(totalTradeValue, sellerId)
 
-      // Refund logic for Buyer if tradePrice < their limit price
+      // Buyer refund logic (if tradePrice < their limit price)
       const buyerLimitPrice = side === 'buy' ? price : Number(match.price)
       if (tradePrice < buyerLimitPrice) {
         const refundPerShare = buyerLimitPrice - tradePrice

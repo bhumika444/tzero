@@ -73,6 +73,15 @@ export function getUserOrders(userId: string, symbol?: string): TradingOrder[] {
     return db.prepare('SELECT * FROM trading_orders WHERE user_id = ? ORDER BY created_at DESC').all(userId) as TradingOrder[]
 }
 
+export function getGlobalTrades(symbol: string, limit: number = 10) {
+    return db.prepare(`
+        SELECT * FROM trading_trades 
+        WHERE symbol = ? 
+        ORDER BY created_at DESC 
+        LIMIT ?
+    `).all(symbol, limit) as any[]
+}
+
 export function createOrder(
     userId: string,
     symbol: string,
@@ -81,36 +90,33 @@ export function createOrder(
     price: number,
     timeInForce: string = 'day'
 ) {
-    const sideLower = side.toLowerCase() as 'buy' | 'sell'
-    const balance = getUserBalance(userId)
-    const holdings = getUserHoldings(userId)
-    const assetHolding = holdings.find(h => h.symbol === symbol)
+    return db.transaction(() => {
+        const sideLower = side.toLowerCase() as 'buy' | 'sell'
+        const balance = getUserBalance(userId)
+        const holdings = getUserHoldings(userId)
+        const assetHolding = holdings.find(h => h.symbol === symbol)
 
-    // Validation
-    if (sideLower === 'buy') {
-        const totalCost = quantity * price
-        if (balance < totalCost) {
-            throw new Error(`Insufficient funds. Required: ${totalCost}, Available: ${balance}`)
+        // Validation
+        if (sideLower === 'buy') {
+            const totalCost = quantity * price
+            if (balance < totalCost) {
+                throw new Error(`Insufficient funds. Required: ${totalCost}, Available: ${balance}`)
+            }
+            // Reserve funds
+            updateUserBalance(userId, -totalCost)
+        } else {
+            if (!assetHolding || assetHolding.shares < quantity) {
+                throw new Error(`Insufficient shares. Required: ${quantity}, Available: ${assetHolding?.shares || 0}`)
+            }
+            // DEBIT shares immediately to prevent double-selling
+            db.prepare('UPDATE trading_holdings SET shares = shares - ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ? AND symbol = ?').run(quantity, userId, symbol)
         }
-        // Reserve funds
-        updateUserBalance(userId, -totalCost)
-    } else {
-        if (!assetHolding || assetHolding.shares < quantity) {
-            throw new Error(`Insufficient shares. Required: ${quantity}, Available: ${assetHolding?.shares || 0}`)
-        }
-        // Shares are implicitly "reserved" since we check balance here, 
-        // but matching engine handles the subtraction on trade.
-        // However, for limit orders, we should probably subtract from "available" shares.
-        // To keep it simple for this assignment, we'll let matchingEngine handle it.
-    }
 
-    const orderId = `ord_${randomUUID()}`
-    const result = matchOrder(orderId, userId, symbol, sideLower, quantity, price, timeInForce)
+        const orderId = `ord_${randomUUID()}`
+        const result = matchOrder(orderId, userId, symbol, sideLower, quantity, price, timeInForce)
 
-    // If order was cancelled or failed to match and it was a buy, we might need to handle refund logic
-    // but let's assume matchingEngine works as intended.
-
-    return result
+        return result
+    })()
 }
 
 export function cancelOrder(userId: string, orderId: string) {
@@ -124,6 +130,9 @@ export function cancelOrder(userId: string, orderId: string) {
     if (order.side === 'buy') {
         const refundAmount = order.remaining_quantity * order.price
         updateUserBalance(userId, refundAmount)
+    } else {
+        // Refund shares for Sell orders
+        db.prepare('UPDATE trading_holdings SET shares = shares + ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ? AND symbol = ?').run(order.remaining_quantity, userId, order.symbol)
     }
 
     return { success: true }

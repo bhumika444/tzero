@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUserId } from '@/lib/auth'
-import { getUserBalance, getUserHoldings, getUserOrders } from '@/lib/tradingStore'
+import { getUserBalance, getUserHoldings, getUserOrders, getGlobalTrades } from '@/lib/tradingStore'
+import secondaryTradingAssets from '@/data/secondaryTradingAssets.json'
 
 export const dynamic = 'force-dynamic'
 
@@ -21,10 +22,23 @@ export async function GET(request: NextRequest) {
         const holdings = getUserHoldings(userId)
         const orders = getUserOrders(userId, symbol)
 
+        let marketHistory = []
+        if (symbol) {
+            marketHistory = getGlobalTrades(symbol)
+            // If DB trades are empty, use JSON template as initial seed (as per user's prompt)
+            if (marketHistory.length === 0) {
+                marketHistory = secondaryTradingAssets.templates.marketHistory.map(t => ({
+                    ...t,
+                    isPlaceholder: true
+                }))
+            }
+        }
+
         return NextResponse.json({
             balance,
             holdings,
             orders,
+            marketHistory
         })
     } catch (error: any) {
         console.error('Error fetching user trading data:', error)

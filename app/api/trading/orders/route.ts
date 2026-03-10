@@ -1,13 +1,33 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUserId } from '@/lib/auth'
-import { createOrder, cancelOrder } from '@/lib/tradingStore'
+import { createOrder, cancelOrder, getUserOrders } from '@/lib/tradingStore'
 
 export const dynamic = 'force-dynamic'
 
 /**
  * GET /api/trading/orders
- * Returns orders (redundant with user-data, but useful for a standard API)
+ * Returns orders for the current user
  */
+export async function GET(request: NextRequest) {
+    try {
+        const userId = await getAuthUserId(request)
+        if (!userId) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+        }
+
+        const symbol = request.nextUrl.searchParams.get('symbol') || undefined
+        const orders = getUserOrders(userId, symbol)
+
+        return NextResponse.json(orders)
+    } catch (error: any) {
+        console.error('Error fetching orders:', error)
+        return NextResponse.json(
+            { error: error?.message || 'Failed to fetch orders' },
+            { status: 500 }
+        )
+    }
+}
+
 export async function POST(request: NextRequest) {
     try {
         const userId = await getAuthUserId(request)
@@ -35,7 +55,7 @@ export async function POST(request: NextRequest) {
 
 /**
  * DELETE /api/trading/orders
- * Cancel an order
+ * Cancel an order (body-based)
  */
 export async function DELETE(request: NextRequest) {
     try {
