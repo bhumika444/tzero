@@ -25,7 +25,7 @@ export default function TrendGraph({ data, isPositive, width = 60, height = 30 }
   })
   const pathData = pathPoints.join(' ')
 
-  const color = isPositive ? theme.palette.primary.main : theme.palette.primary.main
+  const color = isPositive ? theme.palette.primary.main : '#ff4d4d'
 
   return (
     <Box sx={{ width, height }}>

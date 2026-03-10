@@ -120,7 +120,7 @@
 }
 
 .performanceBadgeNegative {
-  background-color: rgba(0, 255, 136, 0.12);
+  background-color: rgba(255, 77, 77, 0.12);
   border: none;
 }
 
@@ -134,7 +134,7 @@
 }
 
 .performanceValueNegative {
-  color: #00ff88;
+  color: #ff4d4d;
   font-weight: 700;
 }
 
@@ -176,7 +176,7 @@
 }
 
 .valueChangeNegative {
-  color: #00ff88;
+  color: #ff4d4d;
 }
 
 .trendGraphContainer {

@@ -103,7 +103,7 @@ export default function SecondaryTradingCard({ card, basePath = '/investing/seco
             {card.isPositive ? (
               <TrendingUp sx={{ fontSize: 18, color: theme.palette.primary.main }} />
             ) : (
-              <TrendingDown sx={{ fontSize: 18, color: theme.palette.primary.main }} />
+              <TrendingDown sx={{ fontSize: 18, color: '#ff4d4d' }} />
             )}
             <Typography
               variant="body2"
@@ -120,8 +120,8 @@ export default function SecondaryTradingCard({ card, basePath = '/investing/seco
             <Typography variant="caption" className={styles.currentValueLabel}>
               Current Value
             </Typography>
-            <Typography 
-              variant="h5" 
+            <Typography
+              variant="h5"
               className={styles.currentValue}
               sx={!isAuthenticated ? { filter: 'blur(4px)', userSelect: 'none' } : {}}
             >
@@ -148,8 +148,8 @@ export default function SecondaryTradingCard({ card, basePath = '/investing/seco
             <Typography variant="caption" className={styles.additionalInfoLabel}>
               Previous Value
             </Typography>
-            <Typography 
-              variant="body2" 
+            <Typography
+              variant="body2"
               className={styles.additionalInfoValue}
               sx={!isAuthenticated ? { filter: 'blur(4px)', userSelect: 'none' } : {}}
             >
@@ -162,8 +162,8 @@ export default function SecondaryTradingCard({ card, basePath = '/investing/seco
                 <Typography variant="caption" className={styles.additionalInfoLabel}>
                   Volume
                 </Typography>
-                <Typography 
-                  variant="body2" 
+                <Typography
+                  variant="body2"
                   className={styles.additionalInfoValue}
                   sx={!isAuthenticated ? { filter: 'blur(4px)', userSelect: 'none' } : {}}
                 >
@@ -174,8 +174,8 @@ export default function SecondaryTradingCard({ card, basePath = '/investing/seco
                 <Typography variant="caption" className={styles.additionalInfoLabel}>
                   Last Price
                 </Typography>
-                <Typography 
-                  variant="body2" 
+                <Typography
+                  variant="body2"
                   className={clsx(styles.additionalInfoValue, styles.lastPriceValue)}
                   sx={!isAuthenticated ? { filter: 'blur(4px)', userSelect: 'none' } : {}}
                 >
