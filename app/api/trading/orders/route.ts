@@ -37,11 +37,22 @@ export async function POST(request: NextRequest) {
 
         const { symbol, side, quantity, price, timeInForce } = await request.json()
 
-        if (!symbol || !side || !quantity || !price) {
+        if (!symbol || !side || quantity === undefined || price === undefined) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
         }
 
-        const order = createOrder(userId, symbol, side, Number(quantity), Number(price), timeInForce)
+        const numQty = Number(quantity);
+        const numPrice = Number(price);
+
+        if (isNaN(numQty) || numQty <= 0) {
+            return NextResponse.json({ error: 'Quantity must be a positive number greater than 0' }, { status: 400 })
+        }
+
+        if (isNaN(numPrice) || numPrice <= 0) {
+            return NextResponse.json({ error: 'Price must be a positive number greater than 0' }, { status: 400 })
+        }
+
+        const order = createOrder(userId, symbol, side, numQty, numPrice, timeInForce)
 
         return NextResponse.json(order)
     } catch (error: any) {

@@ -75,6 +75,9 @@ export default function SecondaryTradingDetailPage() {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  // Order History Pagination State
+  const [visibleOrdersCount, setVisibleOrdersCount] = useState(5)
+
   // Order Form State
   const [side, setSide] = useState<'buy' | 'sell'>('buy')
   const [orderType, setOrderType] = useState<'limit' | 'market'>('limit')
@@ -397,7 +400,7 @@ export default function SecondaryTradingDetailPage() {
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {userData?.orders.slice(0, 5).map((order) => (
+                      {userData?.orders.slice(0, visibleOrdersCount).map((order) => (
                         <TableRow key={order.id}>
                           <TableCell sx={{ borderBottom: '1px solid rgba(255,255,255,0.05)', color: order.side === 'buy' ? theme.palette.primary.main : '#ff4d4d', fontWeight: 700, textTransform: 'uppercase' }}>{order.side}</TableCell>
                           <TableCell sx={{ borderBottom: '1px solid rgba(255,255,255,0.05)', color: '#ffffff' }}>{order.quantity}</TableCell>
@@ -431,6 +434,17 @@ export default function SecondaryTradingDetailPage() {
                     </TableBody>
                   </Table>
                 </TableContainer>
+
+                {userData?.orders && userData.orders.length > visibleOrdersCount && (
+                  <Box sx={{ mt: 2, textAlign: 'center' }}>
+                    <Button
+                      onClick={() => setVisibleOrdersCount(prev => prev + 5)}
+                      sx={{ color: theme.palette.primary.main, fontWeight: 700, fontSize: '12px' }}
+                    >
+                      View More Orders
+                    </Button>
+                  </Box>
+                )}
               </Paper>
             )}
           </Grid>
