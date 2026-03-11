@@ -579,7 +579,7 @@ export default function SecondaryTradingDetailPage() {
                 </Button>
 
                 {!isAuthenticated && (
-                  <Button onClick={() => router.push('/auth/signin')} sx={{ color: theme.palette.primary.main, fontWeight: 700 }}>
+                  <Button onClick={() => router.push('/auth')} sx={{ color: theme.palette.primary.main, fontWeight: 700 }}>
                     Sign In / Create Account
                   </Button>
                 )}
