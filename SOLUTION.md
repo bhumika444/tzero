@@ -11,7 +11,7 @@ I have completed the and refined the **tZERO Secondary Marketplace** trading fea
 
 ### 2. Trading Terminal (Asset Detail Page)
 - **Interactive Price Chart**: Created a custom SVG-based price chart to visualize historical OHLCV data for each asset.
-- **Dynamic Order Book**: Built a live Bid/Ask order book that reflects both initial market depth and real user orders currently in the system.
+- **Order Book Display**: Implemented a realistic static Bid/Ask order book UI using templated JSON data, showcasing initial market depth and a premium trading interface presentation.
 - **Order Placement System**: Developed a sophisticated trading form with:
     - **BUY/SELL Toggles**: Seamlessly switch between order sides.
     - **Limit Order Support**: Enter precise quantity and price.
@@ -29,11 +29,12 @@ I have completed the and refined the **tZERO Secondary Marketplace** trading fea
 ### 4. Portfolio Integration
 - **Unified Balance View**: The portfolio now correctly aggregates cash balances from both traditional banking and the trading marketplace.
 - **Real-Time Holdings**: Assets purchased on the marketplace are immediately reflected in the "Active Holdings" section with accurate share counts and average cost bases.
-- **Marketplace Activity History**: Replaced generic transaction placeholders with a real-time "Marketplace Activity" log showing actual trade executions (matches).
+- **Market Activity Log**: Replaced generic placeholders with a representative template of recent trades to illustrate the execution timeline visually.
 
 ## Technical Decisions & Trade-offs
 - **State Management**: Used React's built-in hooks (`useState`, `useMemo`, `useEffect`) for the trading terminal to keep the application lightweight and fast without adding external state management libraries like Redux.
-- **Database Seeding**: Added a system-level market maker user (`user_system_mm`) and seeded the database with initial liquidity (limit orders) on application startup. This ensures that the matching engine is "alive" and works for first-time users immediately without needing another human trader.
+- **Static vs Live Data UI**: Chose to render the Order Book and Recent Trades sections on the frontend using static JSON templates instead of live database queries. This optimizes the UI for a premium, fast-loading visual presentation while the backend matching engine continues to process real orders underneath.
+- **Database Seeding (Backend Liquidity)**: Added a system-level market maker user (`user_system_mm`) in `lib/db.ts` that seeds the database with initial liquidity (limit orders) on application startup. This is the mechanism that ensures the matching engine is "alive" and allows first-time users to buy and sell instantly without needing another human trader on the other side.
 - **API URL Structure**: Fixed a double-prefixing issue in the starter code to ensure all frontend calls correctly hit the Next.js API routes.
 
 ## Future Improvements
